@@ -57,14 +57,6 @@ class Tracker(ttk.Frame):
         self.create_buttonbox()
         self.table = self.create_table()
 
-        # self.field_container1 = self.create_form_entry("Name: ", self.name, 1)
-        # self.field_container2 = self.create_form_entry("Initiative roll: ", self.initiative, 2)
-        # self.field_container3 = self.create_form_entry("Health: ", self.health, 3)
-
-        # self.field_container1 = self.create_form_entry("Name: ", self.name)
-        # self.field_container2 = self.create_form_entry("Initiative roll: ", self.initiative)
-        # self.field_container3 = self.create_form_entry("Health: ", self.health)
-
     def create_selection_menu(self):
         selection_container = ttk.Frame(self)
         selection_container.pack(fill=X, expand=YES, pady=5)
