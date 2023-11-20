@@ -6,16 +6,30 @@ import random
 
 def roll_dice(input_str):
     if '+' in input_str:
+        health_1 = 0.0
+        health_2 = 0.0
         # Split the input string into two numbers
         first_half, second_half = map(str, input_str.split('+'))
 
-        # Roll the first dice
-        num_dice_1, dice_value_1 = map(int, first_half.split('d'))
-        health_1 = sum([random.randint(1, dice_value_1) for _ in range(num_dice_1)])
+        # Check if it is a dice roll
+        if 'd' in first_half:
+            # Roll the first dice
+            num_dice_1, dice_value_1 = map(int, first_half.split('d'))
+            health_1 = sum([random.randint(1, dice_value_1) for _ in range(num_dice_1)])
 
-        # Roll the second dice
-        num_dice_2, dice_value_2 = map(int, second_half.split('d'))
-        health_2 = sum([random.randint(1, dice_value_2) for _ in range(num_dice_2)])
+        # Check if it is a number
+        elif 'd' not in first_half:
+            health_1 = int(first_half)
+
+        # Check if it is a dice roll
+        if 'd' in second_half:
+            # Roll the second dice
+            num_dice_2, dice_value_2 = map(int, second_half.split('d'))
+            health_2 = sum([random.randint(1, dice_value_2) for _ in range(num_dice_2)])
+            
+        # Check if it is a number
+        elif 'd' not in second_half:
+            health_2 = int(second_half)
 
         # Calculate total health
         results = health_1 + health_2
@@ -30,7 +44,13 @@ def roll_dice(input_str):
         return results
 
 
+
 class Tracker(ttk.Frame):
+
+    def add_sizegrip(self):
+        # Create a size grip
+        sizegrip = ttk.Sizegrip(self.master, style="light")
+        sizegrip.pack(side="bottom", padx=5, pady=5, anchor="se")
 
     # initiating all data
     def __init__(self, master_window):
@@ -40,26 +60,28 @@ class Tracker(ttk.Frame):
         self.field_container3 = None
         self.pack(fill=BOTH, expand=YES)
         self.name = ttk.StringVar(value="")
-        self.health = ttk.StringVar(value=" ")
+        self.health = ttk.StringVar(value="")
         self.selection_var = ttk.StringVar(value="")
         self.initiative = ttk.DoubleVar(value=0)
         self.data = []
         self.colors = master_window.style.colors
         self.created_data = False
+        self.created_data_health = False
 
         # Add Title info
         instruction_text = "Enter the creature's info and click Add"
         instruction = ttk.Label(self, text=instruction_text, width=50)
-        instruction.pack(fill=X, pady=10)
+        instruction.pack(fill=X, pady=6)
 
         # Create objects
         self.create_selection_menu()
         self.create_buttonbox()
         self.table = self.create_table()
+        self.add_sizegrip()
 
     def create_selection_menu(self):
         selection_container = ttk.Frame(self)
-        selection_container.pack(fill=X, expand=YES, pady=5)
+        selection_container.pack(expand=YES,padx=5, pady=5)
 
         selection_label = ttk.Label(selection_container, text="Select Type: ", width=15)
         selection_label.pack(side=LEFT, padx=12)
@@ -124,12 +146,12 @@ class Tracker(ttk.Frame):
             stripecolor=(self.colors.dark, None),
         )
 
-        table.pack(fill=BOTH, expand=YES, padx=10, pady=10)
+        table.pack(fill=BOTH, expand=YES, padx=2, pady=10)
 
         return table
 
     def on_add(self):
-        name = self.name.get()
+        name = str(self.name.get())
         initiative = self.initiative.get()
         health_roll = str(self.health.get())
         selected_value = self.selection_var.get()
@@ -143,40 +165,26 @@ class Tracker(ttk.Frame):
             health = roll_dice(health_roll)
             print("Health roll: ", health)  # test print
 
-        # Destroy existing containers if there are anny
-        if self.created_data:
-            self.field_container1.destroy()
-            self.field_container2.destroy()
-            if selected_value == "Monster":
-                self.field_container3.destroy()
-            self.name = ttk.StringVar(value="")
-            self.health = ttk.StringVar(value="")
-            self.initiative = ttk.DoubleVar(value=0)
-            self.created_data = False
-
         # Refresh table
         self.data.append((name, initiative))
         self.table.destroy()
         self.table = self.create_table()
 
     def on_clear(self):
-        selected_value = self.selection_var.get()
 
         # Clear the data list
         self.data = []
 
-        # Destroy existing containers if there are anny
+        # Destroy all Field containers
         if self.created_data:
             self.field_container1.destroy()
             self.field_container2.destroy()
-            if selected_value == "Monster":
-                self.field_container3.destroy()
-            self.name = ttk.StringVar(value="")
-            self.health = ttk.StringVar(value="")
-            self.initiative = ttk.DoubleVar(value=0)
             self.created_data = False
+            if self.created_data_health:
+                self.field_container3.destroy()
+                self.created_data_health = False
 
-        # Destroy and recreate the table
+        # Clear and recreate Table
         self.table.destroy()
         self.table = self.create_table()
 
@@ -184,35 +192,41 @@ class Tracker(ttk.Frame):
         selected_value = self.selection_var.get()
         print("Selected:", selected_value)
 
+        if not self.created_data:
+            # Destroy Table so visual order doesn't change
+            self.table.destroy()
+
+            # Create new containers
+            self.field_container1 = self.create_form_entry("Name: ", self.name)
+            self.field_container2 = self.create_form_entry("Initiative roll: ", self.initiative)
+            self.created_data = True
+
+            # Recreate table
+            self.table = self.create_table()
+
         if selected_value == "Player":
 
-            # Destroy existing containers if there are anny
-            if self.created_data:
-                self.field_container1.destroy()
-                self.field_container2.destroy()
+            # Destroy Health container
+            if self.created_data_health:
                 self.field_container3.destroy()
+                self.created_data_health = False
 
-            # Create new containers
-            self.field_container1 = self.create_form_entry("Name: ", self.name)
-            self.field_container2 = self.create_form_entry("Initiative roll: ", self.initiative)
-            self.created_data = True
+
 
         elif selected_value == "Monster":
+            # Destroy Table so visual order doesn't change
+            self.table.destroy()
 
-            # Destroy existing containers if there are anny
-            if self.created_data:
-                self.field_container1.destroy()
-                self.field_container2.destroy()
-                self.field_container3.destroy()
-
-            # Create new containers
-            self.field_container1 = self.create_form_entry("Name: ", self.name)
-            self.field_container2 = self.create_form_entry("Initiative roll: ", self.initiative)
+            # Create Health container
             self.field_container3 = self.create_form_entry("Health: ", self.health)
-            self.created_data = True
+            self.created_data_health = True
+
+            # Recreate table
+            self.table = self.create_table()
 
 
-if __name__ == "__Initiative Tracker__":
-    app = ttk.Window("Initiative Tracker", "cyborg", resizable=(False, False))
+
+if __name__ == "__main__":
+    app = ttk.Window("Initiative Tracker", "cyborg", resizable=(True, True))
     Tracker(app)  # Call the tracker function with the app argument
     app.mainloop()
