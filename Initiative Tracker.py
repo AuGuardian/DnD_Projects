@@ -6,16 +6,30 @@ import random
 
 def roll_dice(input_str):
     if '+' in input_str:
+        health_1 = 0.0
+        health_2 = 0.0
         # Split the input string into two numbers
         first_half, second_half = map(str, input_str.split('+'))
 
-        # Roll the first dice
-        num_dice_1, dice_value_1 = map(int, first_half.split('d'))
-        health_1 = sum([random.randint(1, dice_value_1) for _ in range(num_dice_1)])
+        # Check if it is a dice roll
+        if 'd' in first_half:
+            # Roll the first dice
+            num_dice_1, dice_value_1 = map(int, first_half.split('d'))
+            health_1 = sum([random.randint(1, dice_value_1) for _ in range(num_dice_1)])
 
-        # Roll the second dice
-        num_dice_2, dice_value_2 = map(int, second_half.split('d'))
-        health_2 = sum([random.randint(1, dice_value_2) for _ in range(num_dice_2)])
+        # Check if it is a number
+        elif 'd' not in first_half:
+            health_1 = int(first_half)
+
+        # Check if it is a dice roll
+        if 'd' in second_half:
+            # Roll the second dice
+            num_dice_2, dice_value_2 = map(int, second_half.split('d'))
+            health_2 = sum([random.randint(1, dice_value_2) for _ in range(num_dice_2)])
+            
+        # Check if it is a number
+        elif 'd' not in second_half:
+            health_2 = int(second_half)
 
         # Calculate total health
         results = health_1 + health_2
@@ -28,6 +42,8 @@ def roll_dice(input_str):
         # Simulate rolling the dice
         results = sum([random.randint(1, dice_value) for _ in range(num_dice)])
         return results
+
+
 
 class Tracker(ttk.Frame):
 
