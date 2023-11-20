@@ -1,0 +1,12 @@
+This is a python project by 2 colleagues / dungeon masters. The idea is two pronged:
+In the first place is it for both of us a way to learn how to program with python.
+But to learn to program you need  project, Something to work towards. That brings us to the second prong.
+As Dungeon masters we felt the need for a program that would keep track of initiative. There are a lot of options
+For apps and software, but never annything to our liking. So this created the idea for this project.
+
+The first level of this project would be a simple initiative tracker. sorting players and monsters according to innitiative 
+and keeping track of HP and Conditions.
+
+At later levels (if the first one succeeds), perhaps a way of preparing sessions and taking notes during sessions.
+
+
