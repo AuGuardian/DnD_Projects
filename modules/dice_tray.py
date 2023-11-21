@@ -1,20 +1,47 @@
 import random
 
-class DiceRoll:
 
-    def __init__(self, identifier, multiplier, modifier):
-        self.identifier = identifier
-        self.multiplier = multiplier
-        self.modifier = modifier
+def dice_roll(input_str):
+    result = 0
+    rolling = True
 
-    def dice_roll(self):
+    while rolling:
+        if '+' in input_str:
 
-        for x in range(self.multiplier):
+            # Separate the first roll from the string
+            first_half, second_half = input_str.split('+', 1)
 
-            roll = random.randint(self.identifier)
-            print("rol nummer", x , "=",roll)
-            result = result + roll
+            # check if the separated value is a modifier or a die roll
+            if 'd' in first_half:
+                # Roll the dice
+                num_dice_1, dice_value_1 = map(int, first_half.split('d'))
+                roll = sum([random.randint(1, dice_value_1) for _ in range(num_dice_1)])
+                result = result + roll
 
-        result = result + self.modifier
+            elif 'd' not in first_half:
+                # Add the modifier
+                result = int(first_half)
 
-        return result
+            # put the remaining rolls/modifiers back in the input string
+            input_str = second_half
+
+        else:
+            # check if the remaining value is a modifier or a die roll
+            if 'd' in input_str:
+                # Roll the dice
+                num_dice_1, dice_value_1 = int(input_str.split('d'))
+                roll = sum([random.randint(1, dice_value_1) for _ in range(num_dice_1)])
+                result = result + roll
+
+            elif 'd' not in input_str:
+                # Add the modifier
+                result = result + int(input_str)
+
+            # stop rolling dice
+            rolling = False
+
+    return result
+
+
+# total_roll = roll_dice("10+6")
+# print("Your total of all rolled dice = " + str(total_roll))
