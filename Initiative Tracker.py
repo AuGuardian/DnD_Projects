@@ -92,8 +92,6 @@ class Tracker(ttk.Frame):
             {"text": "Initiative roll", "stretch": False},
         ]
 
-        # print(self.data)
-
         table = Tableview(
             master=self,
             coldata=colum_data,
@@ -123,7 +121,6 @@ class Tracker(ttk.Frame):
             print("Health roll: ", health)  # test print
 
         # Refresh table
-        # noinspection PyTypeChecker
         self.table.insert_row("end", [name, initiative])
         self.table.load_table_data()
 
