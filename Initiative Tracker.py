@@ -1,48 +1,7 @@
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from ttkbootstrap.tableview import Tableview
-import random
-
-
-def roll_dice(input_str):
-    if '+' in input_str:
-        health_1 = 0.0
-        health_2 = 0.0
-        # Split the input string into two numbers
-        first_half, second_half = map(str, input_str.split('+'))
-
-        # Check if it is a dice roll
-        if 'd' in first_half:
-            # Roll the first dice
-            num_dice_1, dice_value_1 = map(int, first_half.split('d'))
-            health_1 = sum([random.randint(1, dice_value_1) for _ in range(num_dice_1)])
-
-        # Check if it is a number
-        elif 'd' not in first_half:
-            health_1 = int(first_half)
-
-        # Check if it is a dice roll
-        if 'd' in second_half:
-            # Roll the second dice
-            num_dice_2, dice_value_2 = map(int, second_half.split('d'))
-            health_2 = sum([random.randint(1, dice_value_2) for _ in range(num_dice_2)])
-            
-        # Check if it is a number
-        elif 'd' not in second_half:
-            health_2 = int(second_half)
-
-        # Calculate total health
-        results = health_1 + health_2
-        return results
-
-    else:
-        # Split the input string into the number of dice and the dice value
-        num_dice, dice_value = map(int, input_str.split('d'))
-
-        # Simulate rolling the dice
-        results = sum([random.randint(1, dice_value) for _ in range(num_dice)])
-        return results
-
+import dice_tray as tray
 
 
 class Tracker(ttk.Frame):
@@ -63,7 +22,6 @@ class Tracker(ttk.Frame):
         self.health = ttk.StringVar(value="")
         self.selection_var = ttk.StringVar(value="")
         self.initiative = ttk.DoubleVar(value=0)
-        self.data = []
         self.colors = master_window.style.colors
         self.created_data = False
         self.created_data_health = False
@@ -81,14 +39,14 @@ class Tracker(ttk.Frame):
 
     def create_selection_menu(self):
         selection_container = ttk.Frame(self)
-        selection_container.pack(expand=YES,padx=5, pady=5)
+        selection_container.pack(expand=YES, padx=(0, 100), pady=5,)
 
         selection_label = ttk.Label(selection_container, text="Select Type: ", width=15)
-        selection_label.pack(side=LEFT, padx=12)
+        selection_label.pack(side=LEFT, padx=5)
 
         options = ["", "Monster", "Player"]  # List of options for the selection menu
         selection_menu = ttk.Combobox(selection_container, textvariable=self.selection_var, values=options)
-        selection_menu.pack(side=LEFT, padx=5)
+        selection_menu.pack(side=LEFT, padx=2)
 
         selection_menu.bind("<<ComboboxSelected>>", self.on_select)  # Bind a function to selection event
 
@@ -134,12 +92,11 @@ class Tracker(ttk.Frame):
             {"text": "Initiative roll", "stretch": False},
         ]
 
-        print(self.data)
+        # print(self.data)
 
         table = Tableview(
             master=self,
             coldata=colum_data,
-            rowdata=self.data,
             paginated=False,
             searchable=False,
             bootstyle="danger",
@@ -162,18 +119,15 @@ class Tracker(ttk.Frame):
 
         # roll the health of the monster
         if selected_value == "Monster":
-            health = roll_dice(health_roll)
+            health = tray.dice_roll(health_roll)
             print("Health roll: ", health)  # test print
 
         # Refresh table
-        self.data.append((name, initiative))
-        self.table.destroy()
-        self.table = self.create_table()
+        # noinspection PyTypeChecker
+        self.table.insert_row("end", [name, initiative])
+        self.table.load_table_data()
 
     def on_clear(self):
-
-        # Clear the data list
-        self.data = []
 
         # Destroy all Field containers
         if self.created_data:
@@ -223,7 +177,6 @@ class Tracker(ttk.Frame):
 
             # Recreate table
             self.table = self.create_table()
-
 
 
 if __name__ == "__main__":
