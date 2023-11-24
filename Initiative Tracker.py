@@ -17,6 +17,7 @@ class Tracker(ttk.Frame):
         self.field_container1 = None
         self.field_container2 = None
         self.field_container3 = None
+        self.data = []
         self.pack(fill=BOTH, expand=YES)
         self.name = ttk.StringVar(value="")
         self.health = ttk.StringVar(value="")
@@ -95,6 +96,7 @@ class Tracker(ttk.Frame):
         table = Tableview(
             master=self,
             coldata=colum_data,
+            rowdata=self.data,
             paginated=False,
             searchable=False,
             bootstyle="danger",
@@ -121,8 +123,10 @@ class Tracker(ttk.Frame):
             print("Health roll: ", health)  # test print
 
         # Refresh table
+        # noinspection PyTypeChecker
         self.table.insert_row("end", [name, initiative])
         self.table.load_table_data()
+        self.data.append((name, initiative))
 
     def on_clear(self):
 
@@ -136,6 +140,7 @@ class Tracker(ttk.Frame):
                 self.created_data_health = False
 
         # Clear and recreate Table
+        self.data = []
         self.table.destroy()
         self.table = self.create_table()
 
@@ -144,7 +149,8 @@ class Tracker(ttk.Frame):
         print("Selected:", selected_value)
 
         if not self.created_data:
-            # Destroy Table so visual order doesn't change
+            
+            # Destroy the table so the visual order doesn't change
             self.table.destroy()
 
             # Create new containers
@@ -157,15 +163,20 @@ class Tracker(ttk.Frame):
 
         if selected_value == "Player":
 
+            # Destroy the table so the visual order doesn't change
+            self.table.destroy()
+
             # Destroy Health container
             if self.created_data_health:
                 self.field_container3.destroy()
                 self.created_data_health = False
 
-
+            # Recreate the table
+            self.table = self.create_table()
 
         elif selected_value == "Monster":
-            # Destroy Table so visual order doesn't change
+
+            # Destroy the table so the visual order doesn't change
             self.table.destroy()
 
             # Create Health container
