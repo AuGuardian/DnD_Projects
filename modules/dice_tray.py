@@ -43,5 +43,60 @@ def dice_roll(input_str):
     return result
 
 
+def calculate_average(input_str):
+    result = 0
+    die_count = 0
+    die_value = 0
+    modifier = 0
+
+    # Check if the input string is valid to check the average HP
+    if check_string(input_str):
+        # Separate the die count from the string
+        die_count, second_half = input_str.split('d')
+
+        # Separate the die value and the modifier
+        die_value, modifier = second_half.split('+')
+
+        # Calculate the average hp
+        result = ((((int(die_value) + 1) / 2) * int(die_count)) + int(modifier))
+
+    if not check_string(input_str):
+        print("Value not Valid")
+
+    return result, die_count, die_value, modifier
+
+
+def check_string(input_string):
+    # Count occurrences of 'd' and '+'
+    count_d = input_string.count('d')
+    count_plus = input_string.count('+')
+
+    # Check if 'd' and '+' occur exactly once each
+    if count_d == 1 and count_plus == 1:
+        return True
+    else:
+        return False
+
+
+def hp_roll(input_str):
+    average, count, value, mod = calculate_average(input_str)
+    result = 0
+
+    for x in range(int(count)):
+        roll = random.randint(1, int(value))
+        print("Roll = " + str(roll))
+        result = result + roll
+        print("Current HP = " + str(result))
+
+    result = result + int(mod)
+    print("HP roll = " + str(result))
+    print("Average HP = " + str(average))
+
+    if result < average:
+        result = average
+
+    return result
+    
+
 # total_roll = roll_dice("10+6")
 # print("Your total of all rolled dice = " + str(total_roll))
