@@ -29,7 +29,7 @@ def dice_roll(input_str):
             # check if the remaining value is a modifier or a die roll
             if 'd' in input_str:
                 # Roll the dice
-                num_dice_1, dice_value_1 = int(input_str.split('d'))
+                num_dice_1, dice_value_1 = map(int, input_str.split('d'))
                 roll = sum([random.randint(1, dice_value_1) for _ in range(num_dice_1)])
                 result = result + roll
 
@@ -82,6 +82,7 @@ def hp_roll(input_str):
     average, count, value, mod = calculate_average(input_str)
     result = 0
 
+    # Roll all health die
     for x in range(int(count)):
         roll = random.randint(1, int(value))
         print("Roll = " + str(roll))
@@ -92,11 +93,32 @@ def hp_roll(input_str):
     print("HP roll = " + str(result))
     print("Average HP = " + str(average))
 
+    # Replace rolled result with average when rolled value is lower (makes for stronger monsters)
     if result < average:
         result = average
 
     return result
-    
 
-# total_roll = roll_dice("10+6")
-# print("Your total of all rolled dice = " + str(total_roll))
+
+def initiative_roll(input_str):
+
+    roll = float(dice_roll("1d20"))
+    result = roll + float(input_str) + ((float(input_str) + 10) / 100)
+    # dex value is added after decimal point to break tied initiative
+
+    return result
+
+
+def roll_monster_data(health_roll, dex):
+    # Roll Health and Initiative for the Monster
+    health = hp_roll(health_roll)
+    initiative = initiative_roll(dex)
+
+    # Create the HP-bar in the Health tracker window
+    # ...Yet to program...
+
+    return health, initiative
+
+
+# total_roll = hp_roll("4d8+8")
+# print("Your total HP = " + str(total_roll))
