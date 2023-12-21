@@ -1,34 +1,49 @@
+import json
+import subprocess
+import threading
+
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from ttkbootstrap.tableview import Tableview
+
+import create_elements as create
+import conversion as convert
 import dice_tray as tray
+
+
+def on_health():
+    # Create and start a thread for the second window
+    hp_window_thread = threading.Thread(target=run_script)
+    hp_window_thread.start()
+
+
+def run_script():
+    subprocess.run(["python", "Health Tracker.py"])
 
 
 class Tracker(ttk.Frame):
 
-    def add_sizegrip(self):
-        # Create a size grip
-        sizegrip = ttk.Sizegrip(self.master, style="light")
-        sizegrip.pack(side="bottom", padx=5, pady=5, anchor="se")
-
     # initiating all data
     def __init__(self, master_window):
         super().__init__(master_window, padding=(20, 10))
-        self.checkbox = None
+        self.pack(fill=BOTH, expand=YES)
+        self.colors = master_window.style.colors
+
         self.field_container1 = None
         self.field_container2 = None
         self.field_container3 = None
         self.field_container4 = None
+        self.checkbox = None
+        self.checkbox_var = ttk.BooleanVar()
+
         self.data = []
-        self.pack(fill=BOTH, expand=YES)
         self.name = ttk.StringVar(value="")
         self.health = ttk.StringVar(value="")
         self.selection_var = ttk.StringVar(value="")
         self.initiative = ttk.DoubleVar(value=0)
         self.dex = ttk.DoubleVar(value=0)
         self.number_of_monsters = ttk.DoubleVar(value=0)
-        self.checkbox_var = ttk.BooleanVar()
-        self.colors = master_window.style.colors
+
         self.created_data = False
         self.created_data_monster = False
         self.created_data_player = False
@@ -40,77 +55,13 @@ class Tracker(ttk.Frame):
         instruction.pack(fill=X, pady=6)
 
         # Create objects
-        self.create_selection_menu()
-        self.create_buttonbox()
+        create.selection_menu(self, "Select type: ", options=["", "Monster", "Player"])
+        create.buttonbox(self, 3,
+                         ["Add", "Clear", "HP-Tracker"],
+                         [self.on_add, self.on_clear, on_health],
+                         ["success", "danger", "primary"])
         self.table = self.create_table()
-        self.add_sizegrip()
-
-    def create_selection_menu(self):
-        # Define Container
-        selection_container = ttk.Frame(self)
-        selection_container.pack(expand=YES, padx=(0, 100), pady=5, )
-
-        # Create Label
-        selection_label = ttk.Label(selection_container, text="Select type: ", width=15)
-        selection_label.pack(side=LEFT, padx=5)
-
-        # Add selection menu
-        options = ["", "Monster", "Player"]  # List of options for the selection menu
-        selection_menu = ttk.Combobox(selection_container, textvariable=self.selection_var, values=options)
-        selection_menu.pack(side=LEFT, padx=2)
-
-        selection_menu.bind("<<ComboboxSelected>>", self.on_select)  # Bind a function to selection event
-
-    def create_buttonbox(self):
-        # Define Container
-        button_container = ttk.Frame(self)
-        button_container.pack(fill=X, expand=YES, pady=(15, 10))
-
-        # Create "Add" button
-        add_btn = ttk.Button(
-            master=button_container,
-            text="Add",
-            command=self.on_add,
-            style="success",
-            width=6,
-        )
-        add_btn.pack(side=RIGHT, padx=5)
-
-        # Create "Clear" button
-        clear_btn = ttk.Button(
-            master=button_container,
-            text="Clear",
-            command=self.on_clear,
-            style="danger",
-            width=6,
-        )
-        clear_btn.pack(side=RIGHT, padx=5)
-
-    def create_form_entry(self, label, variable, is_monster=False, checkbox_callback=None):
-        # Define container
-        form_field_container = ttk.Frame(self)
-        form_field_container.pack(fill=X, expand=YES, pady=5)
-
-        # Create a Label
-        form_field_label = ttk.Label(master=form_field_container, text=label, width=15)
-        form_field_label.pack(side=LEFT, padx=12)
-
-        # Create a checkbox if needed
-        checkbox = None
-        if is_monster:
-            checkbox = ttk.Checkbutton(
-                master=form_field_container,
-                text="Group of Monsters",
-                variable=self.checkbox_var,
-                command=lambda: checkbox_callback(self.checkbox_var.get()) if checkbox_callback else None
-            )
-            checkbox.pack(side=BOTTOM, padx=(0, 155), pady=7)
-            form_field_label.pack(side=LEFT, padx=12, pady=(3, 25))
-
-        form_input = ttk.Entry(master=form_field_container, textvariable=variable, font=("Arial", 10))
-        form_input.pack(side=LEFT, padx=5, fill=X, expand=YES)
-
-        return form_field_container, checkbox
+        create.sizegrip(self)
 
     def create_table(self):
         # Define colum data
@@ -160,7 +111,15 @@ class Tracker(ttk.Frame):
                 # noinspection PyTypeChecker
                 self.table.insert_row("end", [name, initiative])
                 self.table.load_table_data()
-                self.data.append((name, initiative, dex, health))
+
+                # Update data
+                self.data.append((name, initiative, dex, health, selected_value))
+                formatted_data = convert.data_to_json(self.data)
+
+                # Write the formatted data to a JSON file
+                with open('shared_data.json', 'w') as file:
+                    json.dump(formatted_data, file, indent=4)
+
 
             if checkbox_value:
                 # Set group number to 1 if input container was left empty
@@ -181,7 +140,14 @@ class Tracker(ttk.Frame):
                     # noinspection PyTypeChecker
                     self.table.insert_row("end", [name, initiative])
                     self.table.load_table_data()
-                    self.data.append((name, initiative, dex, health))
+
+                    # Update data
+                    self.data.append((name, initiative, dex, health, selected_value))
+                    formatted_data = convert.data_to_json(self.data)
+
+                    # Write the formatted data to a JSON file
+                    with open('shared_data.json', 'w') as file:
+                        json.dump(formatted_data, file, indent=4)
 
         # Add player data
         if selected_value == "Player":
@@ -195,7 +161,16 @@ class Tracker(ttk.Frame):
             # noinspection PyTypeChecker
             self.table.insert_row("end", [name, initiative])
             self.table.load_table_data()
-            self.data.append((name, initiative, dex))
+
+            # Update data
+            self.data.append((name, initiative, dex, 0, selected_value))
+            print(self.data)
+            formatted_data = convert.data_to_json(self.data)
+            print(formatted_data)
+
+            # Write the formatted data to a JSON file
+            with open('shared_data.json', 'w') as file:
+                json.dump(formatted_data, file, indent=4)
 
     def on_clear(self):
 
@@ -211,7 +186,7 @@ class Tracker(ttk.Frame):
             self.created_data_monster = False
 
         # Clear and recreate Table
-        self.data = []
+        self.data.clear()
         self.table.destroy()
         self.table = self.create_table()
 
@@ -225,7 +200,7 @@ class Tracker(ttk.Frame):
             self.table.destroy()
 
             # Create new containers
-            self.field_container1, _ = self.create_form_entry("Name: ", self.name)
+            self.field_container1, _ = create.entry_field(self, "Name: ", self.name)
             self.created_data = True
 
             # Recreate table
@@ -259,8 +234,8 @@ class Tracker(ttk.Frame):
 
             if not self.created_data_player:
                 # Create player data
-                self.field_container2, _ = self.create_form_entry("DEX modifier: ", self.dex)
-                self.field_container3, _ = self.create_form_entry("Initiative roll: ", self.initiative)
+                self.field_container2, _ = create.entry_field(self, "DEX modifier: ", self.dex)
+                self.field_container3, _ = create.entry_field(self, "Initiative roll: ", self.initiative)
                 self.created_data_player = True
 
             # Recreate the table
@@ -280,13 +255,13 @@ class Tracker(ttk.Frame):
 
             if not self.created_data_monster:
                 # Create Monster data
-                self.field_container2, _ = self.create_form_entry("DEX modifier: ", self.dex)
-                self.field_container3, self.checkbox = self.create_form_entry(
-                    "Health: ",
-                    self.health,
-                    is_monster=True,
-                    checkbox_callback=self.on_checkbox_checked
-                )
+                self.field_container2, _ = create.entry_field(self, "DEX modifier: ", self.dex)
+                self.field_container3, self.checkbox = create.entry_field(self,
+                                                                          "Health: ",
+                                                                          self.health,
+                                                                          and_checkbox=True,
+                                                                          checkbox_callback=self.on_checkbox_checked
+                                                                          )
                 self.created_data_monster = True
 
             # Show checkbox
@@ -305,8 +280,8 @@ class Tracker(ttk.Frame):
             self.table.destroy()
 
             # Create a new field container for group of monsters
-            self.field_container4, _ = self.create_form_entry("#Monsters: ", self.number_of_monsters)
-            self.field_container4.pack(fill=X, expand=YES, pady=5)
+            self.field_container4, _ = create.entry_field(self, "#Monsters: ", self.number_of_monsters)
+            self.field_container4.pack(fill=X, expand=NO, pady=5)
 
             # Recreate table
             self.table = self.create_table()
@@ -319,5 +294,5 @@ class Tracker(ttk.Frame):
 
 if __name__ == "__main__":
     app = ttk.Window("Initiative Tracker", "cyborg", resizable=(True, True))
-    Tracker(app)  # Call the tracker function with the app argument
+    Tracker(app)  # Call the Tracker function with the app argument
     app.mainloop()
