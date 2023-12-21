@@ -120,5 +120,6 @@ def roll_monster_data(health_roll, dex):
     return health, initiative
 
 
-# total_roll = hp_roll("4d8+8")
-# print("Your total HP = " + str(total_roll))
+if __name__ == "__main__":
+    total_roll = hp_roll("4d8+8")
+    print("Your total HP = " + str(total_roll))
