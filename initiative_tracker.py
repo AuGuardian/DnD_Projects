@@ -1,6 +1,7 @@
 import json
 import subprocess
 import threading
+import os
 
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
@@ -18,7 +19,14 @@ def on_health():
 
 
 def run_script():
-    subprocess.run(["C:/Users/S.Baplu/PycharmProjects/Initiative Tracker app/Health Tracker.exe"])
+    # Get the current directory of the initiative tacker file
+    current_directory = os.path.dirname(os.path.realpath(__file__))
+    
+    # Set the path to the HP-Tacker.exe file
+    exe_path = os.path.join(current_directory, "Health Tracker.exe")
+
+    # Run the .exe file
+    subprocess.run([exe_path])
 
 
 class Tracker(ttk.Frame):
